@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Azure.BlobArchiver": {
+      "commandName": "Project"
+    }
+  }
+}
