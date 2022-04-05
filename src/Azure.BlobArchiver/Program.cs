@@ -71,7 +71,7 @@ public class Program
                 return;
 
             Console.WriteLine($"Uploading {file.FullName}");
-            var uploadResult = await UploadFileAsync(baseDir, file, blobContainerClient, deleteOnUpload, blobTier);
+            var uploadResult = UploadFile(baseDir, file, blobContainerClient, deleteOnUpload, blobTier);
             if (uploadResult)
                 Console.WriteLine($"Succesfully uploaded {file.FullName}");
             else
@@ -95,6 +95,35 @@ public class Program
         {
             using (var filestream = file.OpenRead())
                 await blobClient.UploadAsync(filestream, new BlobUploadOptions() { AccessTier = blobTier });
+
+            if (deleteOnUpload)
+                file.Delete();
+        }
+        catch (RequestFailedException requestFailedException)
+        {
+            Console.WriteLine($"{fileName} failed uploading because: {requestFailedException}");
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool UploadFile(string baseDir, FileInfo file, BlobContainerClient blobContainerClient, bool deleteOnUpload, AccessTier blobTier)
+    {
+        var fileName = file.FullName.Replace(baseDir + Path.DirectorySeparatorChar, "");
+        var blobClient = blobContainerClient.GetBlobClient(fileName);
+
+        if (blobClient.Exists())
+        {
+            if (deleteOnUpload)
+                file.Delete();
+            return true;
+        }
+
+        try
+        {
+            using (var filestream = file.OpenRead())
+                blobClient.Upload(filestream, new BlobUploadOptions() { AccessTier = blobTier });
 
             if (deleteOnUpload)
                 file.Delete();
