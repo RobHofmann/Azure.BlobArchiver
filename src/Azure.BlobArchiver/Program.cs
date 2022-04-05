@@ -59,8 +59,8 @@ public class Program
         BlobContainerClient blobContainerClient = new BlobContainerClient(blobStorageConnectionString, blobStorageContainerName);
         Console.WriteLine($"Connected to blob storage account");
         Console.WriteLine($"Starting upload...");
-        //await RunUploadAsync(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
-        RunUpload(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
+        await RunUploadAsync(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
+        //RunUpload(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
         Console.WriteLine($"Finished upload...");
     }
 
@@ -102,21 +102,32 @@ public class Program
     {
         var fileName = file.FullName.Replace(baseDir + Path.DirectorySeparatorChar, "");
         var blobClient = blobContainerClient.GetBlobClient(fileName);
-
+        Console.WriteLine("Checking if file exists...");
         if (await blobClient.ExistsAsync())
         {
             if (deleteOnUpload)
+            {
                 file.Delete();
+                Console.WriteLine("File exists, deleted locally...");
+            }
             return true;
         }
 
         try
         {
+            Console.WriteLine("Starting to read file...");
             using (var filestream = file.OpenRead())
-                await blobClient.UploadAsync(filestream, new BlobUploadOptions() { AccessTier = blobTier });
+            {
+                Console.WriteLine("Read file... Uploading...");
+                await blobClient.UploadAsync(filestream, new BlobUploadOptions() { AccessTier = blobTier }).ConfigureAwait(false);
+                Console.WriteLine("Uploaded");
+            }
 
             if (deleteOnUpload)
+            {
+                Console.WriteLine("Deleting file...");
                 file.Delete();
+            }
         }
         catch (RequestFailedException requestFailedException)
         {
