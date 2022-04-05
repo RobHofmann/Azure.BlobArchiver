@@ -2,10 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /app
 
-COPY ../src/Azure.BlobArchiver/Azure.BlobArchiver.csproj .
+COPY src/Azure.BlobArchiver/Azure.BlobArchiver.csproj .
 RUN dotnet restore Azure.BlobArchiver.csproj
 
-COPY ../src/Azure.BlobArchiver/ .
+COPY src/Azure.BlobArchiver/ .
 RUN dotnet publish -c Release -o out
 
 # Runtime Container Image
@@ -21,7 +21,7 @@ RUN apt-get -q update && \
     rm -rf /var/lib/apt/lists/*
 
 # Make sure we setup the entrypoint script
-COPY ./entrypoint.sh /entrypoint.sh
+COPY /Docker/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 
 # Place the app binaries
