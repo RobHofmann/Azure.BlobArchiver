@@ -115,13 +115,9 @@ public class Program
 
         try
         {
-            Console.WriteLine("Starting to read file...");
-            using (var filestream = file.OpenRead())
-            {
-                Console.WriteLine("Read file... Uploading...");
-                await blobClient.UploadAsync(filestream, new BlobUploadOptions() { AccessTier = blobTier }).ConfigureAwait(false);
-                Console.WriteLine("Uploaded");
-            }
+            Console.WriteLine($"Uploading {file.FullName}...");
+            await blobClient.UploadAsync(file.FullName, new BlobUploadOptions() { AccessTier = blobTier }).ConfigureAwait(false);
+            Console.WriteLine($"Uploaded {file.FullName}...");
 
             if (deleteOnUpload)
             {
