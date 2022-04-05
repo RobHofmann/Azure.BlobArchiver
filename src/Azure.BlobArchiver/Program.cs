@@ -59,7 +59,8 @@ public class Program
         BlobContainerClient blobContainerClient = new BlobContainerClient(blobStorageConnectionString, blobStorageContainerName);
         Console.WriteLine($"Connected to blob storage account");
         Console.WriteLine($"Starting upload...");
-        await RunUploadAsync(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
+        //await RunUploadAsync(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
+        RunUpload(blobContainerClient, baseDir, uploadThreads, deleteOnUpload, blobTier, gracePeriodBeforeUploadingInSeconds, fileExclusionList);
         Console.WriteLine($"Finished upload...");
     }
 
@@ -71,12 +72,30 @@ public class Program
                 return;
 
             Console.WriteLine($"Uploading {file.FullName}");
-            var uploadResult = UploadFile(baseDir, file, blobContainerClient, deleteOnUpload, blobTier);
+            var uploadResult = await UploadFileAsync(baseDir, file, blobContainerClient, deleteOnUpload, blobTier);
             if (uploadResult)
                 Console.WriteLine($"Succesfully uploaded {file.FullName}");
             else
                 Console.WriteLine($"Failed uploading {file.FullName}");
         }, maxDegreeOfParallelism: uploadThreads);
+    }
+
+    public void RunUpload(BlobContainerClient blobContainerClient, string baseDir, int uploadThreads, bool deleteOnUpload, AccessTier blobTier, int gracePeriodBeforeUploadingInSeconds, string[] fileExclusionList)
+    {
+        Parallel.ForEach(Directory.EnumerateFiles(baseDir, "", SearchOption.AllDirectories).Select(x => new FileInfo(x)).Where(x => x.CreationTime < DateTime.Now.AddSeconds(gracePeriodBeforeUploadingInSeconds * -1)),
+            new ParallelOptions() { MaxDegreeOfParallelism = uploadThreads },
+            file =>
+        {
+            if (fileExclusionList.Contains(file.FullName))
+                return;
+
+            Console.WriteLine($"Uploading {file.FullName}");
+            var uploadResult = UploadFile(baseDir, file, blobContainerClient, deleteOnUpload, blobTier);
+            if (uploadResult)
+                Console.WriteLine($"Succesfully uploaded {file.FullName}");
+            else
+                Console.WriteLine($"Failed uploading {file.FullName}");
+        });
     }
 
     public async Task<bool> UploadFileAsync(string baseDir, FileInfo file, BlobContainerClient blobContainerClient, bool deleteOnUpload, AccessTier blobTier)
