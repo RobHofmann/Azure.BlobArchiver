@@ -27,3 +27,11 @@ NOTE: WIP
 ```
 docker run --name=myuploader -e UPLOAD_CRON_EXPRESSION='*/2 * * * *' -e UPLOAD_THREADS=100 -e DELETE_ON_UPLOAD=true -e BLOB_TIER=Hot -e BLOB_TIER="Archive" -e GRACE_PERIOD_BEFORE_UPLOADING_IN_SECONDS=15 -e EXCLUDE_FILES="/data/somefile.txt,/data/anotherfile.ext" -e BLOB_STORAGE_CONNECTIONSTRING="DefaultEndpointsProtocol=https;AccountName=myaccountname;AccountKey=W1x29dv6UjOQQ838BBk/9GaaV5Tlv/ITmuXko7Rp5UNHB7y03foBy0t31wdgw6FOWGX41cg4Y4C0eAevYFP/gQ==;EndpointSuffix=core.windows.net" -e BLOB_STORAGE_CONTAINERNAME=mydata -v /some/data/path/on/host:/data -d robhofmann/azureblobarchiver
 ```
+
+## Build it yourself
+
+In the root of this repository:
+
+```
+docker build -f Docker/Dockerfile -t yourimagename .
+```
