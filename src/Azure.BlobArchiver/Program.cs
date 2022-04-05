@@ -81,7 +81,7 @@ public class Program
 
     public async Task<bool> UploadFileAsync(string baseDir, FileInfo file, BlobContainerClient blobContainerClient, bool deleteOnUpload, AccessTier blobTier)
     {
-        var fileName = file.FullName.Replace(baseDir + "\\", "");
+        var fileName = file.FullName.Replace(baseDir + Path.DirectorySeparatorChar, "");
         var blobClient = blobContainerClient.GetBlobClient(fileName);
 
         if (await blobClient.ExistsAsync())
