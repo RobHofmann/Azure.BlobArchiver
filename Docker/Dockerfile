@@ -12,6 +12,8 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS runtime
 LABEL Author="Rob Hofmann <rob.hofmann@me.com>"
 
+ENV BASE_DIR=/data
+
 # Add Cron
 RUN apt-get -q update && \
     apt-get -qy dist-upgrade && \
